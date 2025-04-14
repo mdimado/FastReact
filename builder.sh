@@ -3,12 +3,15 @@
 echo "enter the name of your project:"
 read projectname
 
+echo "creating folder $projectname..."
+sleep 1
 #create directory with the name of the project
 mkdir $projectname
 
 cd $projectname
+echo "building frontend next application..."
 #create next.js application named, 'projectname', later change the folder name to 'frontend'
-npx create-next-app@latest $projectname --yes
+npx create-next-app@latest $projectname --yes > /dev/null 2>&1
 # (the yes flag is to use defaults for all options )
 
 #change name of the projectdir to frontend
@@ -22,7 +25,6 @@ cd backend
 
 #check the operating system
 OS=$(uname -s)
-echo $OS
 
 #activate python virtual env, diff for diff os
 case "$OS" in
@@ -38,5 +40,26 @@ case "$OS" in
     ;;
 esac
 
+echo "initializing fastapi backend..."
 #install fastapi
-$pinst install fastapi
+$pinst install fastapi uvicorn> /dev/null 2>&1
+
+#create main.py file
+touch main.py
+#write a basic endpoint 
+echo "
+from fastapi import FastAPI
+
+app = FastAPI()
+
+
+@app.get(\"/\")
+async def root():
+    return {\"message\": \"Hello World\"}" >> main.py
+
+
+(uvicorn main:app --reload > /dev/null 2>&1 &) && echo "backend running on  : http://localhost:8000"
+cd ../frontend && (npm run dev > /dev/null 2>&1 &) && echo "frontend running on  : http://localhost:3000"
+
+
+
